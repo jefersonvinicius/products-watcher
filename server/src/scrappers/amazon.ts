@@ -1,9 +1,9 @@
 import { Scrapper } from '.';
-import { Product } from '@app/core/entities/product';
+import { ProductSnapshot } from '@app/core/entities/product';
 import puppeteer, { Page } from 'puppeteer';
 
 export class AmazonScrapper implements Scrapper {
-  async scrap(url: string): Promise<Product> {
+  async scrap(url: string): Promise<ProductSnapshot> {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 

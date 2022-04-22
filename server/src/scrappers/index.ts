@@ -1,5 +1,5 @@
-import { Product } from '@app/core/entities/product';
+import { ProductSnapshot } from '@app/core/entities/product';
 
 export interface Scrapper {
-  scrap(url: string): Promise<Product>;
+  scrap(url: string): Promise<ProductSnapshot>;
 }
