@@ -1,0 +1,24 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.17.9",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-typescript": "^7.16.7",
+    "@types/jest": "^27.4.1",
+    "@types/puppeteer": "^5.4.5",
+    "babel-jest": "^27.5.1",
+    "jest": "^27.5.1",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:scrappers": "jest --testTimeout=30000 __tests__/scrappers/*.spec.ts"
+  },
+  "dependencies": {
+    "puppeteer": "^13.6.0"
+  }
+}
