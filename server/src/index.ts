@@ -1,6 +1,9 @@
+import { dataSource } from '@app/infra/database/typeorm/datasource';
+import 'reflect-metadata';
 import { startHTTPServer } from './infra/http/server';
 
-function bootstrap() {
+async function bootstrap() {
+  await dataSource.initialize();
   startHTTPServer();
 }
 

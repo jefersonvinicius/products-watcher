@@ -2,7 +2,8 @@ import express, { Request, Response } from 'express';
 import 'express-async-errors';
 import cors from 'cors';
 import { INFRA_CONFIG } from '@app/infra/config';
-import { makeScrapUseCase } from '@app/factories/use-cases/scrap-page-usecase';
+import { makeScrapPageUseCase } from '@app/factories/use-cases/scrap-page-usecase';
+import { makeSavePageUseCase } from '@app/factories/use-cases/save-page-usecase';
 
 const app = express();
 
@@ -12,7 +13,14 @@ app.use(cors());
 app.get('/scrap', async (request, response) => {
   if (!request.query.url) throw Error('Missing the url params');
 
-  const product = await makeScrapUseCase().perform({ url: String(request.query.url) });
+  const product = await makeScrapPageUseCase().perform({ url: String(request.query.url) });
+  return response.status(200).json(product);
+});
+
+app.post('/pages', async (request, response) => {
+  if (!request.query.url) throw Error('Missing the url params');
+
+  const product = await makeSavePageUseCase().perform({ url: String(request.query.url) });
   return response.status(200).json(product);
 });
 
