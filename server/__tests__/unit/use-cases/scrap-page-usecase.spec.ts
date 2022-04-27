@@ -1,13 +1,6 @@
-import { ProductSnapshot } from '@app/core/entities/product';
 import { ScrapPageUseCase } from '@app/core/use-cases/scrap-page-usecase';
-import { Scrapper } from '@app/scrappers';
 import { createFakeProductSnapshot } from '@tests/helpers/factories/product';
-
-class FakeScrapper implements Scrapper {
-  async scrap(url: string): Promise<ProductSnapshot> {
-    return {} as ProductSnapshot;
-  }
-}
+import { FakeScrapper } from '@tests/mocks/FakeScrapper';
 
 function createSut() {
   const scrapper = new FakeScrapper();
