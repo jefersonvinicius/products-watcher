@@ -18,6 +18,7 @@ export function createFakeProduct(override: Partial<Product> = {}): Product {
     url: faker.internet.url(),
     createdAt: new Date(),
     updatedAt: new Date(),
+    prices: [],
     ...override,
   };
 }
