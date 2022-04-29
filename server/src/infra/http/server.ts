@@ -4,6 +4,8 @@ import cors from 'cors';
 import { INFRA_CONFIG } from '@app/infra/config';
 import { makeScrapPageUseCase } from '@app/factories/use-cases/scrap-page-usecase';
 import { makeSavePageUseCase } from '@app/factories/use-cases/save-page-usecase';
+import { makeFetchAllProductsUseCase } from '@app/factories/use-cases/fetch-all-products-usecase';
+import { Pagination } from '@app/shared/pagination';
 
 const app = express();
 
@@ -22,6 +24,15 @@ app.post('/pages', async (request, response) => {
 
   const product = await makeSavePageUseCase().perform({ url: String(request.query.url) });
   return response.status(200).json(product);
+});
+
+app.get('/products', async (request, response) => {
+  const pagination = Pagination.fromExpressRequest(request);
+  const result = await makeFetchAllProductsUseCase().perform({ pagination });
+
+  return response
+    .status(200)
+    .json({ ...result, ...pagination, pages: pagination.totalPages({ amount: result.total }) });
 });
 
 app.use((error: Error, _: Request, response: Response) => {
