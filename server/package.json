@@ -23,7 +23,7 @@
     "dev": "nodemon --ext ts,json --exec ts-node -r tsconfig-paths/register src/index.ts",
     "test": "jest",
     "test:scrappers": "jest --testTimeout=30000 --runInBand __tests__/scrappers/*.spec.ts",
-    "test:unit": "jest __tests__/unit/**/*.spec.ts"
+    "test:unit": "yarn test -c jest.unit.config.js --watch"
   },
   "dependencies": {
     "cors": "^2.8.5",

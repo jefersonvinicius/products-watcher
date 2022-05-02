@@ -12,3 +12,9 @@ export interface Product extends ProductSnapshot {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export class ProductNotFound extends Error {
+  constructor(productId: number) {
+    super(`The product with id ${productId} was not found`);
+  }
+}

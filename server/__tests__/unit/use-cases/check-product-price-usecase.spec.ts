@@ -1,4 +1,4 @@
-import { Product } from '@app/core/entities/product';
+import { Product, ProductNotFound } from '@app/core/entities/product';
 import { CheckProductPriceUseCase } from '@app/core/use-cases/check-product-price-usecase copy';
 import { Clock } from '@app/shared/clock';
 import { createFakeProduct, createFakeProductSnapshot } from '@tests/helpers/factories/product';
@@ -10,17 +10,22 @@ function createSut() {
   const scrapper = new FakeScrapper();
   const productsRepository = new InMemoryProductsRepository();
   const sut = new CheckProductPriceUseCase(scrapper, productsRepository);
-  return { sut, scrapper, productsRepository };
+
+  const currentDate = new Date('2022-10-20T10:00:00.000Z');
+  const snapshot = createFakeProductSnapshot({ price: 100 });
+  const product = createFakeProduct({ price: 150 });
+  productsRepository.setProducts([product]);
+  const scrapperSpy = jest.spyOn(scrapper, 'scrap').mockResolvedValue(snapshot);
+  jest.spyOn(Clock, 'current').mockReturnValue(currentDate);
+
+  return { sut, scrapper, productsRepository, scrapperSpy, product, snapshot, currentDate };
 }
 
 describe('CheckProductPriceUseCase', () => {
   it('should update current product price with snapshot price', async () => {
-    const { sut, scrapper, productsRepository } = createSut();
-    const snapshot = createFakeProductSnapshot({ price: 100 });
-    const product = createFakeProduct({ price: 150 });
-    const scrapperSpy = jest.spyOn(scrapper, 'scrap').mockResolvedValue(snapshot);
+    const { sut, productsRepository, scrapperSpy, product, snapshot } = createSut();
 
-    const result = await sut.perform({ product });
+    const result = await sut.perform({ productId: product.id });
 
     expect(result.product.id).toBe(product.id);
     expect(result.product.price).toBe(snapshot.price);
@@ -30,14 +35,9 @@ describe('CheckProductPriceUseCase', () => {
   });
 
   it('should add product price to product', async () => {
-    const { sut, scrapper, productsRepository } = createSut();
-    const currentDate = new Date('2022-10-20T10:00:00.000Z');
-    const snapshot = createFakeProductSnapshot({ price: 100 });
-    const product = createFakeProduct({ price: 150 });
-    jest.spyOn(Clock, 'current').mockReturnValue(currentDate);
-    jest.spyOn(scrapper, 'scrap').mockResolvedValue(snapshot);
+    const { sut, productsRepository, currentDate, product, snapshot } = createSut();
 
-    const result = await sut.perform({ product });
+    const result = await sut.perform({ productId: product.id });
 
     expect(result.product.id).toBe(product.id);
     expect(result.product.prices[0]).toStrictEqual({
@@ -48,5 +48,14 @@ describe('CheckProductPriceUseCase', () => {
     expect(result.product.prices).toHaveLength(1);
     const productSaved = productsRepository.products.get(product.id);
     expect(productSaved?.prices).toHaveLength(1);
+  });
+
+  it('should throw an error if product is not found', async () => {
+    const { sut, productsRepository } = createSut();
+    productsRepository.clear();
+
+    const promise = sut.perform({ productId: 1 });
+
+    await expect(promise).rejects.toThrowError(new ProductNotFound(1));
   });
 });

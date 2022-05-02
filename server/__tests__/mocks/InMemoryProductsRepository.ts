@@ -1,6 +1,6 @@
 import { Product, ProductSnapshot } from '@app/core/entities/product';
 import { ProductPrice } from '@app/core/entities/product-price';
-import { ProductsRepository } from '@app/core/repositories/products';
+import { ProductsRepository, UpdateWithSnapshotParams } from '@app/core/repositories/products';
 import { Clock } from '@app/shared/clock';
 import { Pagination } from '@app/shared/pagination';
 
@@ -22,6 +22,10 @@ export class InMemoryProductsRepository implements ProductsRepository {
     return productToSave;
   }
 
+  async findById(productId: number): Promise<Product | null> {
+    return this.products.get(productId) ?? null;
+  }
+
   async findAll(params: { pagination: Pagination }): Promise<{ total: number; products: Product[] }> {
     const { pagination } = params;
     const start = (pagination.page - 1) * pagination.perPage;
@@ -30,18 +34,22 @@ export class InMemoryProductsRepository implements ProductsRepository {
     return { products: productsList, total: this.products.size };
   }
 
-  async updateWithSnapshotData(product: Product, snapshot: ProductSnapshot): Promise<Product> {
-    const clone: Product = JSON.parse(JSON.stringify(product));
+  async addProductPriceFromSnapshot({ productId, snapshot }: UpdateWithSnapshotParams): Promise<Product> {
+    const product = this.products.get(productId)!;
     const productPrice: ProductPrice = { id: this.currentPriceId, value: snapshot.price, pricedAt: Clock.current() };
     this.currentPriceId++;
-    clone.price = snapshot.price;
-    clone.prices.push(productPrice);
-    this.products.set(clone.id, clone);
-    return clone;
+    product.price = snapshot.price;
+    product.prices.push(productPrice);
+    this.products.set(product.id, product);
+    return product;
   }
 
   setProducts(products: Product[]) {
     products.forEach((product) => this.products.set(product.id, product));
     this.currentId += products.length;
+  }
+
+  clear() {
+    Array.from(this.products.keys()).forEach((key) => this.products.delete(key));
   }
 }
