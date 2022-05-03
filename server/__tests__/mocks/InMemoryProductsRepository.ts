@@ -10,12 +10,10 @@ export class InMemoryProductsRepository implements ProductsRepository {
   products = new Map<number, Product>();
 
   async save(product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product> {
-    const productToSave: Product = {
+    const productToSave = Product.withDefaults({
       id: this.currentId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
       ...product,
-    };
+    });
     this.products.set(productToSave.id, productToSave);
     this.currentId++;
 
@@ -38,10 +36,10 @@ export class InMemoryProductsRepository implements ProductsRepository {
     const product = this.products.get(productId)!;
     const productPrice: ProductPrice = { id: this.currentPriceId, value: snapshot.price, pricedAt: Clock.current() };
     this.currentPriceId++;
-    product.price = snapshot.price;
-    product.prices.push(productPrice);
-    this.products.set(product.id, product);
-    return product;
+    const newProduct = Product.withDefaults({ ...product, price: snapshot.price });
+    newProduct.prices.push(productPrice);
+    this.products.set(product.id, newProduct);
+    return newProduct;
   }
 
   setProducts(products: Product[]) {

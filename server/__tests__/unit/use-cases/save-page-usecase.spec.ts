@@ -1,3 +1,4 @@
+import { Product } from '@app/core/entities/product';
 import { SavePageUseCase } from '@app/core/use-cases/save-page-usecase';
 import { createFakeProductSnapshot } from '@tests/helpers/factories/product';
 import { FakeScrapper } from '@tests/mocks/FakeScrapper';
@@ -19,13 +20,16 @@ describe('ScrapPageUseCase', () => {
 
     const result = await sut.perform({ url: 'http://anyurl.com' });
 
-    const expectedProduct = {
+    const expectedProduct: Product = {
       id: 1,
+      name: productSnapshot.name,
+      price: productSnapshot.price,
+      url: productSnapshot.url,
+      prices: [],
       createdAt: expect.any(Date),
       updatedAt: expect.any(Date),
-      ...productSnapshot,
     };
-    expect(result.product).toStrictEqual(expectedProduct);
-    expect(productsRepository.products.get(result.product.id)).toStrictEqual(expectedProduct);
+    expect(result.product).toMatchObject(expectedProduct);
+    expect(productsRepository.products.get(result.product.id)).toMatchObject(expectedProduct);
   });
 });

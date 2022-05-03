@@ -6,11 +6,23 @@ export interface ProductSnapshot {
   price: number;
 }
 
-export interface Product extends ProductSnapshot {
-  id: number;
-  prices: ProductPrice[];
-  createdAt: Date;
-  updatedAt: Date;
+type ProductPropertiesWithoutDefaults = Omit<Product, 'createdAt' | 'updatedAt'>;
+
+export class Product implements ProductSnapshot {
+  prices: ProductPrice[] = [];
+
+  private constructor(
+    readonly id: number,
+    readonly name: string,
+    readonly url: string,
+    readonly price: number,
+    readonly createdAt: Date,
+    readonly updatedAt: Date
+  ) {}
+
+  static withDefaults(data: ProductPropertiesWithoutDefaults) {
+    return new Product(data.id, data.name, data.url, data.price, new Date(), new Date());
+  }
 }
 
 export class ProductNotFound extends Error {
