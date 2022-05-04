@@ -6,22 +6,33 @@ export interface ProductSnapshot {
   price: number;
 }
 
+export interface ProductEntityAttrs extends ProductSnapshot {
+  id: number;
+
+  createdAt: Date;
+  updatedAt: Date;
+  prices: ProductPrice[];
+}
+
 type ProductPropertiesWithoutDefaults = Omit<Product, 'createdAt' | 'updatedAt'>;
 
-export class Product implements ProductSnapshot {
-  prices: ProductPrice[] = [];
-
+export class Product implements ProductEntityAttrs {
   private constructor(
     readonly id: number,
     readonly name: string,
     readonly url: string,
     readonly price: number,
     readonly createdAt: Date,
-    readonly updatedAt: Date
+    readonly updatedAt: Date,
+    readonly prices: ProductPrice[] = []
   ) {}
 
   static withDefaults(data: ProductPropertiesWithoutDefaults) {
-    return new Product(data.id, data.name, data.url, data.price, new Date(), new Date());
+    return new Product(data.id, data.name, data.url, data.price, new Date(), new Date(), data.prices);
+  }
+
+  static fromPlainObject(data: Required<Product>) {
+    return new Product(data.id, data.name, data.url, data.price, data.createdAt, data.updatedAt, data.prices);
   }
 }
 

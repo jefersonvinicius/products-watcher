@@ -1,6 +1,6 @@
-import { ProductsRepositorySqlite } from '@app/infra/database/ProductsRepositorySqlite';
+import { ProductsRepositoryTypeORM } from '@app/infra/database/products-repository-type-orm';
 import { dataSource } from '@app/infra/database/typeorm/datasource';
 
 export function makeProductsRepository() {
-  return new ProductsRepositorySqlite(dataSource);
+  return new ProductsRepositoryTypeORM(dataSource);
 }

@@ -1,9 +1,10 @@
-import { productSchema } from '@app/infra/database/typeorm/schemas/ProductSchema';
+import { ProductORMEntity } from '@app/infra/database/typeorm/entities/product';
+import { ProductPriceORMEntity } from '@app/infra/database/typeorm/entities/product-price';
 import { DataSource } from 'typeorm';
 
 export const dataSource = new DataSource({
   type: 'sqlite',
   database: 'database.sqlite',
-  entities: [productSchema],
+  entities: [ProductORMEntity, ProductPriceORMEntity],
   synchronize: true,
 });
