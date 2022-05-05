@@ -18,6 +18,7 @@ export class CheckProductPriceUseCase implements UseCase<CheckProductPriceParams
     const productSaved = await this.productsRepository.findById(params.productId);
     if (!productSaved) throw new ProductNotFound(params.productId);
     const snapshot = await this.scrapper.scrap(productSaved.url);
+    if (productSaved.price === snapshot.price) return { product: productSaved };
     const product = await this.productsRepository.addProductPriceFromSnapshot({
       productId: params.productId,
       snapshot,

@@ -58,4 +58,16 @@ describe('CheckProductPriceUseCase', () => {
 
     await expect(promise).rejects.toThrowError(new ProductNotFound(1));
   });
+
+  it('should not add product price when scrapped price is the same', async () => {
+    const { sut, productsRepository, scrapper } = createSut();
+    const snapshot = createFakeProductSnapshot({ price: 100 });
+    const product = createFakeProduct({ price: 100 });
+    productsRepository.setProducts([product]);
+    jest.spyOn(scrapper, 'scrap').mockResolvedValue(snapshot);
+
+    const result = await sut.perform({ productId: product.id });
+
+    expect(result.product.prices).toHaveLength(0);
+  });
 });
