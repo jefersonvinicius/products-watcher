@@ -44,6 +44,7 @@ describe('CheckProductPriceUseCase', () => {
       id: 1,
       value: snapshot.price,
       pricedAt: currentDate,
+      productId: product.id,
     });
     expect(result.product.prices).toHaveLength(1);
     const productSaved = productsRepository.products.get(product.id);

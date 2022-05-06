@@ -47,7 +47,6 @@ export class ProductsRepositoryTypeORM implements ProductsRepository {
     await this.productsRepository.save(product);
     const withRelations = await this.productsRepository.findOne({
       where: { id: params.productId },
-      relations: { prices: true },
     });
     return withRelations!.toEntity();
   }

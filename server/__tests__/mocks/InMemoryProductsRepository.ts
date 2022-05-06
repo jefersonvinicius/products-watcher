@@ -1,6 +1,11 @@
 import { Product, ProductSnapshot } from '@app/core/entities/product';
 import { ProductPrice } from '@app/core/entities/product-price';
-import { ProductsRepository, UpdateWithSnapshotParams } from '@app/core/repositories/products';
+import {
+  FindByIdWithPricesFilteredParams,
+  FindByIdWithPricesFilteredResult,
+  ProductsRepository,
+  UpdateWithSnapshotParams,
+} from '@app/core/repositories/products';
 import { Clock } from '@app/shared/clock';
 import { Pagination } from '@app/shared/pagination';
 
@@ -34,7 +39,12 @@ export class InMemoryProductsRepository implements ProductsRepository {
 
   async addProductPriceFromSnapshot({ productId, snapshot }: UpdateWithSnapshotParams): Promise<Product> {
     const product = this.products.get(productId)!;
-    const productPrice: ProductPrice = { id: this.currentPriceId, value: snapshot.price, pricedAt: Clock.current() };
+    const productPrice: ProductPrice = {
+      id: this.currentPriceId,
+      value: snapshot.price,
+      pricedAt: Clock.current(),
+      productId: product.id,
+    };
     this.currentPriceId++;
     const newProduct = Product.withDefaults({ ...product, price: snapshot.price });
     newProduct.prices.push(productPrice);
@@ -45,6 +55,15 @@ export class InMemoryProductsRepository implements ProductsRepository {
   setProducts(products: Product[]) {
     products.forEach((product) => this.products.set(product.id, product));
     this.currentId += products.length;
+  }
+
+  async findByIdWithPricesFiltered(
+    params: FindByIdWithPricesFilteredParams
+  ): Promise<FindByIdWithPricesFilteredResult> {
+    const product = this.products.get(params.productId)!;
+    const total = product.prices.length;
+    const filtered = product?.prices.filter((price) => params.dateRange.within(price.pricedAt));
+    return { product: Product.fromPlainObject({ ...product, prices: filtered }), productPricesTotal: total };
   }
 
   clear() {
