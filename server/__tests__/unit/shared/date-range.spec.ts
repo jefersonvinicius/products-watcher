@@ -26,6 +26,14 @@ describe('DateRange', () => {
       expect(dateRange.startAt).toStrictEqual(new Date('2022-08-23T10:10:00.000Z'));
       expect(dateRange.endAt).toStrictEqual(new Date('2022-11-23T10:10:00.000Z'));
     });
+
+    it('should return last month as fallback when is invalid filter', () => {
+      jest.spyOn(Clock, 'current').mockReturnValue(new Date('2022-11-23T10:10:00.000Z'));
+      const dateRange = DateRange.fromFilter('any' as DateRangeFilter);
+
+      expect(dateRange.startAt).toStrictEqual(new Date('2022-10-23T10:10:00.000Z'));
+      expect(dateRange.endAt).toStrictEqual(new Date('2022-11-23T10:10:00.000Z'));
+    });
   });
 
   describe('when calling within', () => {

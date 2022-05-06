@@ -8,7 +8,7 @@ export enum DateRangeFilter {
 }
 
 export class DateRange {
-  private static filterToRangeMakers: { [key in DateRangeFilter]: () => DateRange } = {
+  private static filterToRangeMakers: { [key in DateRangeFilter]: (() => DateRange) | undefined } = {
     [DateRangeFilter.LastMonth]: () => new DateRange(subMonths(Clock.current(), 1), Clock.current()),
     [DateRangeFilter.LastWeek]: () => new DateRange(subWeeks(Clock.current(), 1), Clock.current()),
     [DateRangeFilter.Last3Months]: () => new DateRange(subMonths(Clock.current(), 3), Clock.current()),
@@ -17,7 +17,12 @@ export class DateRange {
   private constructor(readonly startAt: Date, readonly endAt: Date) {}
 
   static fromFilter(filter: DateRangeFilter) {
-    return this.filterToRangeMakers[filter]();
+    const makeRange = this.filterToRangeMakers[filter];
+    if (!makeRange) {
+      const fallbackMaker = this.filterToRangeMakers[DateRangeFilter.LastMonth]!;
+      return fallbackMaker();
+    }
+    return makeRange();
   }
 
   within(date: Date) {
