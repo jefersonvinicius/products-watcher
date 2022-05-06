@@ -1,3 +1,4 @@
+import { ProductPrice } from '@app/core/entities/product-price';
 import { ProductORMEntity } from '@app/infra/database/typeorm/entities/product';
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
@@ -12,12 +13,24 @@ export class ProductPriceORMEntity {
   @Column()
   value!: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 
   @ManyToOne(() => ProductORMEntity, (product) => product.prices)
   product!: ProductORMEntity;
+
+  @Column({ name: 'product_id' })
+  productId!: number;
+
+  toEntity(): ProductPrice {
+    return {
+      id: this.id,
+      pricedAt: this.pricedAt,
+      productId: this.productId,
+      value: this.value,
+    };
+  }
 }

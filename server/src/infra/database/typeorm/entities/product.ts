@@ -40,7 +40,7 @@ export class ProductORMEntity {
       updatedAt: this.updatedAt,
       name: this.name,
       price: this.price,
-      prices: this.prices,
+      prices: this.prices.map((p) => p.toEntity()),
       url: this.url,
     });
   }

@@ -28,6 +28,14 @@ export class Pagination {
     return Math.ceil(params.amount / this.perPage);
   }
 
+  toView(params: { totalItems: number }) {
+    return {
+      page: this.page,
+      perPage: this.perPage,
+      totalPages: this.totalPages({ amount: params.totalItems }),
+    };
+  }
+
   toTypeORM() {
     return {
       take: this.perPage,

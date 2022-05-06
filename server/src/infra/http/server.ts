@@ -8,6 +8,8 @@ import { makeFetchAllProductsUseCase } from '@app/factories/use-cases/fetch-all-
 import { Pagination } from '@app/shared/pagination';
 import { makeCheckProductPriceUseCase } from '@app/factories/use-cases/check-product-price-usecase';
 import { HttpError } from '@app/infra/http/errors';
+import { makeFetchAllProductPricesUseCase } from '@app/factories/use-cases/fetch-all-product-prices-usecase';
+import { DateRangeFilter } from '@app/shared/date-range';
 
 const app = express();
 
@@ -32,9 +34,7 @@ app.get('/products', async (request, response) => {
   const pagination = Pagination.fromExpressRequest(request);
   const result = await makeFetchAllProductsUseCase().perform({ pagination });
 
-  return response
-    .status(200)
-    .json({ ...result, ...pagination, pages: pagination.totalPages({ amount: result.total }) });
+  return response.status(200).json({ ...result, ...pagination.toView({ totalItems: result.total }) });
 });
 
 app.post('/products/:productId/prices', async (request, response) => {
@@ -44,6 +44,18 @@ app.post('/products/:productId/prices', async (request, response) => {
 
   return response.status(200).json({
     product: result.product,
+  });
+});
+
+app.get('/products/:productId/prices', async (request, response) => {
+  const result = await makeFetchAllProductPricesUseCase().perform({
+    productId: Number(request.params.productId),
+    dateFilter: (String(request.query['date-filter']) as DateRangeFilter) ?? DateRangeFilter.LastMonth,
+  });
+
+  return response.status(200).json({
+    product: result.product,
+    total: result.total,
   });
 });
 
