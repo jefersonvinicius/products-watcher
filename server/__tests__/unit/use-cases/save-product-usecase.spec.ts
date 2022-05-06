@@ -1,5 +1,5 @@
 import { Product } from '@app/core/entities/product';
-import { SavePageUseCase } from '@app/core/use-cases/save-page-usecase';
+import { SaveProductUseCase } from '@app/core/use-cases/save-product-usecase';
 import { createFakeProductSnapshot } from '@tests/helpers/factories/product';
 import { FakeScrapper } from '@tests/mocks/FakeScrapper';
 import { InMemoryProductsRepository } from '@tests/mocks/InMemoryProductsRepository';
@@ -8,11 +8,11 @@ function createSut() {
   const scrapper = new FakeScrapper();
   const scrapSpy = jest.spyOn(scrapper, 'scrap');
   const productsRepository = new InMemoryProductsRepository();
-  const sut = new SavePageUseCase(scrapper, productsRepository);
+  const sut = new SaveProductUseCase(scrapper, productsRepository);
   return { sut, scrapSpy, productsRepository };
 }
 
-describe('ScrapPageUseCase', () => {
+describe('SaveProductUseCase', () => {
   it('should save the scrapped product into products repository', async () => {
     const { sut, scrapSpy, productsRepository } = createSut();
     const productSnapshot = createFakeProductSnapshot();

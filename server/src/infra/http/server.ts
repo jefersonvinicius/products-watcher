@@ -3,7 +3,7 @@ import 'express-async-errors';
 import cors from 'cors';
 import { INFRA_CONFIG } from '@app/infra/config';
 import { makeScrapPageUseCase } from '@app/factories/use-cases/scrap-page-usecase';
-import { makeSavePageUseCase } from '@app/factories/use-cases/save-page-usecase';
+import { makeSaveProductUseCase } from '@app/factories/use-cases/save-product-usecase';
 import { makeFetchAllProductsUseCase } from '@app/factories/use-cases/fetch-all-products-usecase';
 import { Pagination } from '@app/shared/pagination';
 import { makeCheckProductPriceUseCase } from '@app/factories/use-cases/check-product-price-usecase';
@@ -26,7 +26,7 @@ app.get('/scrap', async (request, response) => {
 app.post('/products', async (request, response) => {
   if (!request.query.url) throw new HttpError('Missing the url param', 400);
 
-  const product = await makeSavePageUseCase().perform({ url: String(request.query.url) });
+  const product = await makeSaveProductUseCase().perform({ url: String(request.query.url) });
   return response.status(200).json(product);
 });
 
