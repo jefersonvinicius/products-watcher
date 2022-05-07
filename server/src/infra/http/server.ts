@@ -10,6 +10,7 @@ import { makeCheckProductPriceUseCase } from '@app/factories/use-cases/check-pro
 import { HttpError } from '@app/infra/http/errors';
 import { makeFetchAllProductPricesUseCase } from '@app/factories/use-cases/fetch-all-product-prices-usecase';
 import { DateRangeFilter } from '@app/shared/date-range';
+import { HttpStatusCode } from '@app/infra/http/status-codes';
 
 const app = express();
 
@@ -17,24 +18,24 @@ app.use(express.json());
 app.use(cors());
 
 app.get('/scrap', async (request, response) => {
-  if (!request.query.url) throw new HttpError('Missing the url param', 400);
+  if (!request.query.url) throw new HttpError('Missing the url param', HttpStatusCode.BadRequest);
 
   const product = await makeScrapPageUseCase().perform({ url: String(request.query.url) });
-  return response.status(200).json(product);
+  return response.status(HttpStatusCode.Ok).json(product);
 });
 
 app.post('/products', async (request, response) => {
-  if (!request.query.url) throw new HttpError('Missing the url param', 400);
+  if (!request.query.url) throw new HttpError('Missing the url param', HttpStatusCode.BadRequest);
 
   const product = await makeSaveProductUseCase().perform({ url: String(request.query.url) });
-  return response.status(200).json(product);
+  return response.status(HttpStatusCode.Ok).json(product);
 });
 
 app.get('/products', async (request, response) => {
   const pagination = Pagination.fromExpressRequest(request);
   const result = await makeFetchAllProductsUseCase().perform({ pagination });
 
-  return response.status(200).json({ ...result, ...pagination.toView({ totalItems: result.total }) });
+  return response.status(HttpStatusCode.Ok).json({ ...result, ...pagination.toView({ totalItems: result.total }) });
 });
 
 app.post('/products/:productId/prices', async (request, response) => {
@@ -42,7 +43,7 @@ app.post('/products/:productId/prices', async (request, response) => {
     productId: Number(request.params.productId),
   });
 
-  return response.status(200).json({
+  return response.status(HttpStatusCode.Ok).json({
     product: result.product,
   });
 });
@@ -50,17 +51,18 @@ app.post('/products/:productId/prices', async (request, response) => {
 app.get('/products/:productId/prices', async (request, response) => {
   const result = await makeFetchAllProductPricesUseCase().perform({
     productId: Number(request.params.productId),
-    dateFilter: (String(request.query['date-filter']) as DateRangeFilter) ?? DateRangeFilter.LastMonth,
+    dateFilter: (request.query['date-filter'] as DateRangeFilter) ?? DateRangeFilter.LastMonth,
   });
 
-  return response.status(200).json({
+  return response.status(HttpStatusCode.Ok).json({
     product: result.product,
     total: result.total,
   });
 });
 
 app.use((error: any, _: Request, response: Response, __: NextFunction) => {
-  return response.status(error.statusCode ?? 500).json({ message: error?.message ?? 'Unexpected error' });
+  const translated = HttpError.fromError(error);
+  return response.status(translated.statusCode).json({ message: translated.message });
 });
 
 export function startHTTPServer() {
