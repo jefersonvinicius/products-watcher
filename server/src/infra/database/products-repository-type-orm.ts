@@ -22,21 +22,25 @@ export class ProductsRepositoryTypeORM implements ProductsRepository {
 
   async save(data: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product> {
     const dbProduct = await this.productsRepository.save({ ...data });
-    return {
-      ...dbProduct,
-    };
+    const price = await this.productPricesRepository.save({
+      pricedAt: Clock.current(),
+      productId: dbProduct.id,
+      value: data.price,
+    });
+    const priceSaved = await this.productPricesRepository.findOneBy({ id: price.id });
+    return Product.fromPlainObject({ ...dbProduct, prices: [priceSaved!.toEntity()] });
   }
 
   async findAll(params: { pagination: Pagination }): Promise<{ total: number; products: Product[] }> {
     const { pagination } = params;
     const [rows, total] = await this.productsRepository.findAndCount({ ...pagination.toTypeORM() });
 
-    return { products: rows, total };
+    return { products: rows.map((r) => r.toEntity()), total };
   }
 
   async findById(productId: number): Promise<Product | null> {
     const product = await this.productsRepository.findOneBy({ id: productId });
-    return product;
+    return product!.toEntity();
   }
 
   async addProductPriceFromSnapshot(params: UpdateWithSnapshotParams): Promise<Product> {
@@ -52,6 +56,7 @@ export class ProductsRepositoryTypeORM implements ProductsRepository {
     await this.productsRepository.save(product);
     const withRelations = await this.productsRepository.findOne({
       where: { id: params.productId },
+      relations: { prices: true },
     });
     return withRelations!.toEntity();
   }

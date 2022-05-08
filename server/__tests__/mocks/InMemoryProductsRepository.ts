@@ -15,12 +15,20 @@ export class InMemoryProductsRepository implements ProductsRepository {
   products = new Map<number, Product>();
 
   async save(product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product> {
+    const price: ProductPrice = {
+      id: this.currentPriceId,
+      pricedAt: Clock.current(),
+      productId: this.currentId,
+      value: product.price,
+    };
     const productToSave = Product.withDefaults({
       id: this.currentId,
       ...product,
+      prices: [price],
     });
     this.products.set(productToSave.id, productToSave);
     this.currentId++;
+    this.currentPriceId++;
 
     return productToSave;
   }

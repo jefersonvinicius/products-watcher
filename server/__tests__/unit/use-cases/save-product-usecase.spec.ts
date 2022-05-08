@@ -1,5 +1,6 @@
 import { Product } from '@app/core/entities/product';
 import { SaveProductUseCase } from '@app/core/use-cases/save-product-usecase';
+import { Clock } from '@app/shared/clock';
 import { createFakeProductSnapshot } from '@tests/helpers/factories/product';
 import { FakeScrapper } from '@tests/mocks/FakeScrapper';
 import { InMemoryProductsRepository } from '@tests/mocks/InMemoryProductsRepository';
@@ -7,6 +8,7 @@ import { InMemoryProductsRepository } from '@tests/mocks/InMemoryProductsReposit
 function createSut() {
   const scrapper = new FakeScrapper();
   const scrapSpy = jest.spyOn(scrapper, 'scrap');
+  jest.spyOn(Clock, 'current').mockReturnValue(new Date('2022-10-09T10:10:00.000Z'));
   const productsRepository = new InMemoryProductsRepository();
   const sut = new SaveProductUseCase(scrapper, productsRepository);
   return { sut, scrapSpy, productsRepository };
@@ -25,7 +27,14 @@ describe('SaveProductUseCase', () => {
       name: productSnapshot.name,
       price: productSnapshot.price,
       url: productSnapshot.url,
-      prices: [],
+      prices: [
+        {
+          id: 1,
+          pricedAt: Clock.current(),
+          productId: 1,
+          value: productSnapshot.price,
+        },
+      ],
       createdAt: expect.any(Date),
       updatedAt: expect.any(Date),
     };

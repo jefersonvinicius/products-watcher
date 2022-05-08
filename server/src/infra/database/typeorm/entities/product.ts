@@ -31,7 +31,7 @@ export class ProductORMEntity {
   updatedAt!: Date;
 
   @OneToMany(() => ProductPriceORMEntity, (productPrice) => productPrice.product)
-  prices!: ProductPriceORMEntity[];
+  prices?: ProductPriceORMEntity[];
 
   toEntity(): Product {
     return Product.fromPlainObject({
@@ -40,7 +40,7 @@ export class ProductORMEntity {
       updatedAt: this.updatedAt,
       name: this.name,
       price: this.price,
-      prices: this.prices.map((p) => p.toEntity()),
+      prices: this.prices?.map((p) => p.toEntity()) ?? [],
       url: this.url,
     });
   }
