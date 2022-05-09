@@ -6,23 +6,25 @@ import { FakeScrapper } from '@tests/mocks/FakeScrapper';
 import { InMemoryProductsRepository } from '@tests/mocks/InMemoryProductsRepository';
 import { InMemoryScrappingCache } from '@tests/mocks/InMemoryScrappingCache';
 
+const url = 'http://anyurl.com';
+
 function createSut() {
   const scrapper = new FakeScrapper();
+  const productSnapshot = createFakeProductSnapshot();
+  scrapper.snapshots.set(url, productSnapshot);
   const scrappingCache = new InMemoryScrappingCache();
   const scrapSpy = jest.spyOn(scrapper, 'scrap');
   jest.spyOn(Clock, 'current').mockReturnValue(new Date('2022-10-09T10:10:00.000Z'));
   const productsRepository = new InMemoryProductsRepository();
   const sut = new SaveProductUseCase(scrapper, scrappingCache, productsRepository);
-  return { sut, scrapSpy, productsRepository, scrappingCache };
+  return { sut, scrapSpy, productsRepository, scrappingCache, productSnapshot, scrapper };
 }
 
 describe('SaveProductUseCase', () => {
   it('should save the scrapped product into products repository', async () => {
-    const { sut, scrapSpy, productsRepository } = createSut();
-    const productSnapshot = createFakeProductSnapshot();
-    scrapSpy.mockResolvedValue(productSnapshot);
+    const { sut, productsRepository, productSnapshot } = createSut();
 
-    const result = await sut.perform({ url: 'http://anyurl.com' });
+    const result = await sut.perform({ url });
 
     const expectedProduct: Product = {
       id: 1,
@@ -44,12 +46,20 @@ describe('SaveProductUseCase', () => {
     expect(productsRepository.products.get(result.product.id)).toMatchObject(expectedProduct);
   });
 
-  it('should save snapshot from cache when it is available', async () => {
+  it('should cache the scrapped snapshot', async () => {
+    const { sut, scrapper, productSnapshot } = createSut();
+
+    await sut.perform({ url });
+
+    expect(await scrapper.cache.get(url)).toStrictEqual(productSnapshot);
+  });
+
+  it('should save product from cache when it is available', async () => {
     const { sut, scrapSpy, productsRepository, scrappingCache } = createSut();
     const productSnapshot = createFakeProductSnapshot();
 
-    scrappingCache.set('http://anyurl.com', productSnapshot);
-    const result = await sut.perform({ url: 'http://anyurl.com' });
+    scrappingCache.set(url, productSnapshot);
+    const result = await sut.perform({ url: url });
 
     const expectedProduct: Product = {
       id: 1,

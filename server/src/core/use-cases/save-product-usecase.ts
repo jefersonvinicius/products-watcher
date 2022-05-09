@@ -22,7 +22,7 @@ export class SaveProductUseCase implements UseCase<SaveProductParams, SaveProduc
   async perform(params: SaveProductParams): Promise<SaveProductResult> {
     let snapshot = await this.scrappingCache.get(params.url);
     if (!snapshot) {
-      snapshot = await this.scrapper.scrap(params.url);
+      snapshot = await this.scrapper.scrapAndCache(params.url);
     }
     const saved = await this.productsRepository.save(snapshot);
     return { product: saved };

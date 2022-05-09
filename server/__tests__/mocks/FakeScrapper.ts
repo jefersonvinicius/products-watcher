@@ -13,6 +13,6 @@ export class FakeScrapper implements Scrapper {
   }
 
   async scrap(url: string): Promise<ProductSnapshot> {
-    return {} as ProductSnapshot;
+    return this.snapshots.get(url)!;
   }
 }

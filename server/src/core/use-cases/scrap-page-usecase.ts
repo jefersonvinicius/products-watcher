@@ -16,7 +16,6 @@ export class ScrapPageUseCase implements UseCase<ScrapPageParams, ScrapPageResul
 
   async perform(params: ScrapPageParams): Promise<ScrapPageResult> {
     const scrapped = await this.scrapper.scrapAndCache(params.url);
-    // await this.scrappingCache.set(params.url, scrapped);
     return { product: scrapped };
   }
 }
