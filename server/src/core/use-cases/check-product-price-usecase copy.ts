@@ -1,6 +1,7 @@
 import { Product, ProductNotFound } from '@app/core/entities/product';
 import { ProductsRepository } from '@app/core/repositories/products';
 import { UseCase } from '@app/core/use-cases';
+import { ScrappingCache } from '@app/infra/cache/scrapping-cache';
 import { Scrapper } from '@app/scrappers';
 
 type CheckProductPriceParams = {
@@ -12,12 +13,17 @@ type CheckProductPriceResult = {
 };
 
 export class CheckProductPriceUseCase implements UseCase<CheckProductPriceParams, CheckProductPriceResult> {
-  constructor(private scrapper: Scrapper, private productsRepository: ProductsRepository) {}
+  constructor(
+    private scrapper: Scrapper,
+    private productsRepository: ProductsRepository,
+    private scrappingCache: ScrappingCache
+  ) {}
 
   async perform(params: CheckProductPriceParams): Promise<CheckProductPriceResult> {
     const productSaved = await this.productsRepository.findById(params.productId);
     if (!productSaved) throw new ProductNotFound(params.productId);
     const snapshot = await this.scrapper.scrap(productSaved.url);
+    await this.scrappingCache.set(productSaved.url, snapshot);
     if (productSaved.price === snapshot.price) return { product: productSaved };
     const product = await this.productsRepository.addProductPriceFromSnapshot({
       productId: params.productId,

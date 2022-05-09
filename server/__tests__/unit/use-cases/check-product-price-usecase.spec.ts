@@ -5,11 +5,13 @@ import { createFakeProduct, createFakeProductSnapshot } from '@tests/helpers/fac
 import { createFakeProductPrice } from '@tests/helpers/factories/product-price';
 import { FakeScrapper } from '@tests/mocks/FakeScrapper';
 import { InMemoryProductsRepository } from '@tests/mocks/InMemoryProductsRepository';
+import { InMemoryScrappingCache } from '@tests/mocks/InMemoryScrappingCache';
 
 function createSut() {
   const scrapper = new FakeScrapper();
   const productsRepository = new InMemoryProductsRepository();
-  const sut = new CheckProductPriceUseCase(scrapper, productsRepository);
+  const scrappingCache = new InMemoryScrappingCache();
+  const sut = new CheckProductPriceUseCase(scrapper, productsRepository, scrappingCache);
 
   const currentDate = new Date('2022-10-20T10:00:00.000Z');
   const snapshot = createFakeProductSnapshot({ price: 100 });
@@ -18,7 +20,7 @@ function createSut() {
   const scrapperSpy = jest.spyOn(scrapper, 'scrap').mockResolvedValue(snapshot);
   jest.spyOn(Clock, 'current').mockReturnValue(currentDate);
 
-  return { sut, scrapper, productsRepository, scrapperSpy, product, snapshot, currentDate };
+  return { sut, scrapper, productsRepository, scrapperSpy, product, snapshot, currentDate, scrappingCache };
 }
 
 describe('CheckProductPriceUseCase', () => {
@@ -70,5 +72,13 @@ describe('CheckProductPriceUseCase', () => {
     const result = await sut.perform({ productId: product.id });
 
     expect(result.product.prices).toHaveLength(0);
+  });
+
+  it('should cache the scrapped snapshot of the product', async () => {
+    const { sut, scrappingCache, product, snapshot } = createSut();
+
+    await sut.perform({ productId: product.id });
+
+    expect(await scrappingCache.get(product.url)).toStrictEqual(snapshot);
   });
 });
