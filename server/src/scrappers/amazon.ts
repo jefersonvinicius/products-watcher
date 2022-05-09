@@ -1,9 +1,22 @@
 import { Scrapper } from '.';
 import { ProductSnapshot } from '@app/core/entities/product';
 import puppeteer, { Page } from 'puppeteer';
+import { ScrappingCache } from '@app/infra/cache/scrapping-cache';
 
 export class AmazonScrapper implements Scrapper {
+  constructor(private scrappingCache: ScrappingCache) {}
+
   async scrap(url: string): Promise<ProductSnapshot> {
+    return this.scrapTheUrl(url);
+  }
+
+  async scrapAndCache(url: string): Promise<ProductSnapshot> {
+    const snapshot = await this.scrapTheUrl(url);
+    await this.scrappingCache.set(url, snapshot);
+    return snapshot;
+  }
+
+  private async scrapTheUrl(url: string) {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
