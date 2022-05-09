@@ -1,5 +1,6 @@
 import { ProductSnapshot } from '@app/core/entities/product';
 import { UseCase } from '@app/core/use-cases';
+import { ScrappingCache } from '@app/infra/cache/scrapping-cache';
 import { Scrapper } from '@app/scrappers';
 
 type ScrapPageParams = {
@@ -14,7 +15,8 @@ export class ScrapPageUseCase implements UseCase<ScrapPageParams, ScrapPageResul
   constructor(private scrapper: Scrapper) {}
 
   async perform(params: ScrapPageParams): Promise<ScrapPageResult> {
-    const scrapped = await this.scrapper.scrap(params.url);
+    const scrapped = await this.scrapper.scrapAndCache(params.url);
+    // await this.scrappingCache.set(params.url, scrapped);
     return { product: scrapped };
   }
 }
