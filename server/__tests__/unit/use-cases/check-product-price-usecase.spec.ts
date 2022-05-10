@@ -1,8 +1,7 @@
-import { Product, ProductNotFound } from '@app/core/entities/product';
-import { CheckProductPriceUseCase } from '@app/core/use-cases/check-product-price-usecase copy';
+import { ProductNotFound } from '@app/core/entities/product';
+import { CheckProductPriceUseCase } from '@app/core/use-cases/check-product-price-usecase';
 import { Clock } from '@app/shared/clock';
 import { createFakeProduct, createFakeProductSnapshot } from '@tests/helpers/factories/product';
-import { createFakeProductPrice } from '@tests/helpers/factories/product-price';
 import { FakeScrapper } from '@tests/mocks/FakeScrapper';
 import { InMemoryProductsRepository } from '@tests/mocks/InMemoryProductsRepository';
 import { InMemoryScrappingCache } from '@tests/mocks/InMemoryScrappingCache';
