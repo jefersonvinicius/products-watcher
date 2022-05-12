@@ -1,3 +1,4 @@
+import { Alert } from '@app/core/entities/alert';
 import { ProductPrice } from '@app/core/entities/product-price';
 
 export interface ProductSnapshot {
@@ -7,32 +8,42 @@ export interface ProductSnapshot {
 }
 
 export interface ProductEntityAttrs extends ProductSnapshot {
-  id: number;
-
+  id?: number;
   createdAt: Date;
   updatedAt: Date;
-  prices: ProductPrice[];
+  prices?: ProductPrice[];
+  alerts?: Alert[];
 }
 
 type ProductPropertiesWithoutDefaults = Omit<Product, 'createdAt' | 'updatedAt'>;
 
 export class Product implements ProductEntityAttrs {
   private constructor(
-    readonly id: number,
+    readonly id: number | undefined,
     readonly name: string,
     readonly url: string,
     readonly price: number,
     readonly createdAt: Date,
     readonly updatedAt: Date,
-    readonly prices: ProductPrice[] = []
+    readonly prices?: ProductPrice[],
+    readonly alerts?: Alert[]
   ) {}
 
   static withDefaults(data: ProductPropertiesWithoutDefaults) {
-    return new Product(data.id, data.name, data.url, data.price, new Date(), new Date(), data.prices);
+    return new Product(data.id, data.name, data.url, data.price, new Date(), new Date(), data.prices, data.alerts);
   }
 
-  static fromPlainObject(data: Required<Product>) {
-    return new Product(data.id, data.name, data.url, data.price, data.createdAt, data.updatedAt, data.prices);
+  static fromPlainObject(data: Product) {
+    return new Product(
+      data.id,
+      data.name,
+      data.url,
+      data.price,
+      data.createdAt,
+      data.updatedAt,
+      data.prices,
+      data.alerts
+    );
   }
 }
 

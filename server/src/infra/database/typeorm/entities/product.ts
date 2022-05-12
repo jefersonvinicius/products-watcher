@@ -1,4 +1,5 @@
 import { Product } from '@app/core/entities/product';
+import { AlertORMEntity } from '@app/infra/database/typeorm/entities/alert';
 import { ProductPriceORMEntity } from '@app/infra/database/typeorm/entities/product-price';
 import {
   Column,
@@ -33,6 +34,9 @@ export class ProductORMEntity {
   @OneToMany(() => ProductPriceORMEntity, (productPrice) => productPrice.product)
   prices?: ProductPriceORMEntity[];
 
+  @OneToMany(() => ProductPriceORMEntity, (alert) => alert.product)
+  alerts?: AlertORMEntity[];
+
   toEntity(): Product {
     return Product.fromPlainObject({
       id: this.id,
@@ -40,7 +44,8 @@ export class ProductORMEntity {
       updatedAt: this.updatedAt,
       name: this.name,
       price: this.price,
-      prices: this.prices?.map((p) => p.toEntity()) ?? [],
+      prices: this.prices?.map((p) => p.toEntity()),
+      alerts: this.alerts?.map((a) => a.toEntity()),
       url: this.url,
     });
   }

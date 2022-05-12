@@ -24,7 +24,9 @@ export class SaveProductUseCase implements UseCase<SaveProductParams, SaveProduc
     if (!snapshot) {
       snapshot = await this.scrapper.scrapAndCache(params.url);
     }
-    const saved = await this.productsRepository.save(snapshot);
+
+    const product = Product.withDefaults({ ...snapshot, id: undefined, alerts: undefined, prices: undefined });
+    const saved = await this.productsRepository.save(product);
     return { product: saved };
   }
 }

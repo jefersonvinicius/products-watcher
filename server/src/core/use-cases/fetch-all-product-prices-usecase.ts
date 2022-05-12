@@ -1,4 +1,4 @@
-import { Product } from '@app/core/entities/product';
+import { Product, ProductNotFound } from '@app/core/entities/product';
 import { ProductsRepository } from '@app/core/repositories/products';
 import { UseCase } from '@app/core/use-cases';
 import { DateRange, DateRangeFilter } from '@app/shared/date-range';
@@ -21,6 +21,7 @@ export class FetchAllProductPricesUseCase implements UseCase<FetchAllProductPric
       productId: params.productId,
       dateRange: DateRange.fromFilter(params.dateFilter),
     });
+    if (!result.product) throw new ProductNotFound(params.productId);
     return { product: result.product, total: result.productPricesTotal };
   }
 }

@@ -7,10 +7,12 @@ export class AlertsRepositoryTypeORM implements AlertsRepository {
   private alertsRepository: Repository<AlertORMEntity>;
 
   constructor(private dataSource: DataSource) {
-    this.alertsRepository = dataSource.getRepository(AlertORMEntity);
+    this.alertsRepository = this.dataSource.getRepository(AlertORMEntity);
   }
 
-  async save(data: Alert): Promise<Alert> {
-    return {} as Alert;
+  async save(alert: Alert): Promise<Alert> {
+    const created = this.alertsRepository.create({ ...alert, alertSended: alert.alertSended });
+    const saved = await this.alertsRepository.save(created);
+    return saved.toEntity();
   }
 }

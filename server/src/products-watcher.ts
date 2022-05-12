@@ -22,7 +22,7 @@ async function productsWatcher() {
 
     console.log(`Checking the product: ${product.id}`);
     await makeCheckProductPriceUseCase().perform({
-      productId: product.id,
+      productId: product.id!,
     });
   } catch (error: any) {
     console.log('[ERROR]: ', error?.message);

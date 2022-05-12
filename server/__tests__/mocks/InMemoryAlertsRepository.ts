@@ -7,7 +7,7 @@ export class InMemoryAlertsRepository implements AlertsRepository {
 
   async save(data: Alert): Promise<Alert> {
     const alert = Alert.fromPlainObject({
-      ...data,
+      ...data.toJSON(),
       id: data.id ?? this.currentId,
     });
     this.alerts.set(alert.id!, alert);

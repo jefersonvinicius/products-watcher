@@ -14,7 +14,7 @@ export class InMemoryProductsRepository implements ProductsRepository {
   private currentPriceId = 1;
   products = new Map<number, Product>();
 
-  async save(product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product> {
+  async save(product: Product): Promise<Product> {
     const price: ProductPrice = {
       id: this.currentPriceId,
       pricedAt: Clock.current(),
@@ -22,11 +22,11 @@ export class InMemoryProductsRepository implements ProductsRepository {
       value: product.price,
     };
     const productToSave = Product.withDefaults({
-      id: this.currentId,
       ...product,
+      id: this.currentId,
       prices: [price],
     });
-    this.products.set(productToSave.id, productToSave);
+    this.products.set(productToSave.id!, productToSave);
     this.currentId++;
     this.currentPriceId++;
 
@@ -34,7 +34,9 @@ export class InMemoryProductsRepository implements ProductsRepository {
   }
 
   async findById(productId: number): Promise<Product | null> {
-    return this.products.get(productId) ?? null;
+    let product = this.products.get(productId) ?? null;
+    if (product) product = Product.fromPlainObject({ ...product });
+    return product;
   }
 
   async findAll(params: { pagination: Pagination }): Promise<{ total: number; products: Product[] }> {
@@ -51,30 +53,34 @@ export class InMemoryProductsRepository implements ProductsRepository {
       id: this.currentPriceId,
       value: snapshot.price,
       pricedAt: Clock.current(),
-      productId: product.id,
+      productId: product.id!,
     };
     this.currentPriceId++;
     const newProduct = Product.withDefaults({ ...product, price: snapshot.price });
-    newProduct.prices.push(productPrice);
-    this.products.set(product.id, newProduct);
+    newProduct.prices?.push(productPrice);
+    this.products.set(product.id!, newProduct);
     return newProduct;
-  }
-
-  setProducts(products: Product[]) {
-    products.forEach((product) => this.products.set(product.id, product));
-    this.currentId += products.length;
   }
 
   async findByIdWithPricesFiltered(
     params: FindByIdWithPricesFilteredParams
   ): Promise<FindByIdWithPricesFilteredResult> {
     const product = this.products.get(params.productId)!;
-    const total = product.prices.length;
-    const filtered = product?.prices.filter((price) => params.dateRange.within(price.pricedAt));
+    const total = product.prices?.length ?? 0;
+    const filtered = product?.prices?.filter((price) => params.dateRange.within(price.pricedAt)) ?? [];
     return { product: Product.fromPlainObject({ ...product, prices: filtered }), productPricesTotal: total };
+  }
+
+  async findByIdWithAlerts(productId: number): Promise<Product | null> {
+    return this.products.get(productId) ?? null;
   }
 
   clear() {
     Array.from(this.products.keys()).forEach((key) => this.products.delete(key));
+  }
+
+  setProducts(products: Product[]) {
+    products.forEach((product) => this.products.set(product.id!, product));
+    this.currentId += products.length;
   }
 }

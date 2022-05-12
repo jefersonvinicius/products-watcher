@@ -13,14 +13,15 @@ export type FindByIdWithPricesFilteredParams = {
 };
 
 export type FindByIdWithPricesFilteredResult = {
-  product: Product;
+  product: Product | null;
   productPricesTotal: number;
 };
 
 export interface ProductsRepository {
-  save(product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'prices'>): Promise<Product>;
+  save(product: Product): Promise<Product>;
   findAll(params: { pagination: Pagination }): Promise<{ total: number; products: Product[] }>;
   findById(productId: number): Promise<Product | null>;
+  findByIdWithAlerts(productId: number): Promise<Product | null>;
   addProductPriceFromSnapshot(params: UpdateWithSnapshotParams): Promise<Product>;
   findByIdWithPricesFiltered(params: FindByIdWithPricesFilteredParams): Promise<FindByIdWithPricesFilteredResult>;
 }

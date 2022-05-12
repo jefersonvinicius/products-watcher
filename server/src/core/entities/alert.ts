@@ -9,7 +9,7 @@ export enum AlertTypes {
 }
 
 export interface AlertEntityAttrs {
-  id: number | null;
+  id?: number | undefined;
   operation: AlertOperations;
   value: number;
   alertType: AlertTypes;
@@ -23,22 +23,29 @@ export class InvalidAlertOperation extends Error {
   }
 }
 
+export class InvalidAlertType extends Error {
+  constructor(alertType: string) {
+    super(`The alert types available are ${Object.values(AlertTypes).join(', ')}. But got ${alertType}`);
+  }
+}
+
 type EmailAlertParams = Omit<AlertEntityAttrs, 'alertType' | 'alertSended' | 'id'>;
 
 export class Alert implements AlertEntityAttrs {
   private constructor(
-    readonly id: number | null,
+    readonly id: number | undefined,
     readonly operation: AlertOperations,
     readonly value: number,
     readonly alertType: AlertTypes,
-    readonly alertSended: boolean,
+    // private _alertSended: boolean,
+    private _alertSended: boolean,
     readonly productId: number
   ) {
     this.validate();
   }
 
   static makeEmailAlert(params: EmailAlertParams) {
-    return new Alert(null, params.operation, params.value, AlertTypes.Email, false, params.productId);
+    return new Alert(undefined, params.operation, params.value, AlertTypes.Email, false, params.productId);
   }
 
   static fromPlainObject(params: AlertEntityAttrs) {
@@ -47,6 +54,19 @@ export class Alert implements AlertEntityAttrs {
 
   private validate() {
     if (!Object.values(AlertOperations).includes(this.operation)) throw new InvalidAlertOperation(this.operation);
+    if (!Object.values(AlertTypes).includes(this.alertType)) throw new InvalidAlertType(this.alertType);
+  }
+
+  changeToSended() {
+    this._alertSended = true;
+  }
+
+  get alertSended() {
+    return this._alertSended;
+  }
+
+  toJSON() {
+    return { ...this, alertSended: this.alertSended };
   }
 
   isAlertable(params: { price: number }) {

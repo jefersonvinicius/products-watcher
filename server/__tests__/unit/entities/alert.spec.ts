@@ -1,4 +1,4 @@
-import { Alert, AlertOperations, AlertTypes, InvalidAlertOperation } from '@app/core/entities/alert';
+import { Alert, AlertOperations, AlertTypes, InvalidAlertOperation, InvalidAlertType } from '@app/core/entities/alert';
 import { createFakeAlert } from '@tests/helpers/factories/alerts';
 
 describe('Alert', () => {
@@ -33,7 +33,7 @@ describe('Alert', () => {
   });
 
   describe('validation', () => {
-    let baseAlertProps = {
+    let validAlertData = {
       id: 1,
       alertSended: false,
       value: 100,
@@ -43,8 +43,14 @@ describe('Alert', () => {
     };
     it('should throws if invalid operation is provided', () => {
       expect(() => {
-        Alert.fromPlainObject({ ...baseAlertProps, operation: 'any' as AlertOperations });
+        Alert.fromPlainObject({ ...validAlertData, operation: 'any' as AlertOperations });
       }).toThrowError(new InvalidAlertOperation('any'));
+    });
+
+    it('should throws if invalid alert type is provided', () => {
+      expect(() => {
+        Alert.fromPlainObject({ ...validAlertData, alertType: 'any' as AlertTypes });
+      }).toThrowError(new InvalidAlertType('any'));
     });
   });
 });

@@ -43,7 +43,7 @@ describe('SaveProductUseCase', () => {
       updatedAt: expect.any(Date),
     };
     expect(result.product).toMatchObject(expectedProduct);
-    expect(productsRepository.products.get(result.product.id)).toMatchObject(expectedProduct);
+    expect(productsRepository.products.get(result.product.id!)).toMatchObject(expectedProduct);
   });
 
   it('should cache the scrapped snapshot', async () => {
@@ -78,6 +78,6 @@ describe('SaveProductUseCase', () => {
       updatedAt: expect.any(Date),
     };
     expect(scrapSpy).not.toHaveBeenCalled();
-    expect(productsRepository.products.get(result.product.id)).toMatchObject(expectedProduct);
+    expect(productsRepository.products.get(result.product.id!)).toMatchObject(expectedProduct);
   });
 });

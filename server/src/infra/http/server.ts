@@ -11,6 +11,7 @@ import { HttpError } from '@app/infra/http/errors';
 import { makeFetchAllProductPricesUseCase } from '@app/factories/use-cases/fetch-all-product-prices-usecase';
 import { DateRangeFilter } from '@app/shared/date-range';
 import { HttpStatusCode } from '@app/infra/http/status-codes';
+import { makeCreateAlertUseCase } from '@app/factories/use-cases/create-alert-usecase';
 
 const app = express();
 
@@ -57,6 +58,18 @@ app.get('/products/:productId/prices', async (request, response) => {
   return response.status(HttpStatusCode.Ok).json({
     product: result.product,
     total: result.total,
+  });
+});
+
+app.post('/products/:productId/alerts', async (request, response) => {
+  const result = await makeCreateAlertUseCase().perform({
+    productId: Number(request.params.productId),
+    operation: request.body.operation,
+    value: request.body.value,
+  });
+
+  return response.status(HttpStatusCode.Ok).json({
+    alert: result.alert,
   });
 });
 

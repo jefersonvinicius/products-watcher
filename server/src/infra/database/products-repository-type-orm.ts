@@ -20,15 +20,16 @@ export class ProductsRepositoryTypeORM implements ProductsRepository {
     this.productsRepository = this.dataSource.getRepository(ProductORMEntity);
   }
 
-  async save(data: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product> {
-    const dbProduct = await this.productsRepository.save({ ...data });
+  async save(data: Product): Promise<Product> {
+    const typeOrmProduct = this.productsRepository.create({ ...data, alerts: undefined });
+    const dbProduct = await this.productsRepository.save(typeOrmProduct);
     const price = await this.productPricesRepository.save({
       pricedAt: Clock.current(),
       productId: dbProduct.id,
       value: data.price,
     });
     const priceSaved = await this.productPricesRepository.findOneBy({ id: price.id });
-    return Product.fromPlainObject({ ...dbProduct, prices: [priceSaved!.toEntity()] });
+    return Product.fromPlainObject({ ...dbProduct, prices: [priceSaved!.toEntity()], alerts: undefined });
   }
 
   async findAll(params: { pagination: Pagination }): Promise<{ total: number; products: Product[] }> {
@@ -40,7 +41,12 @@ export class ProductsRepositoryTypeORM implements ProductsRepository {
 
   async findById(productId: number): Promise<Product | null> {
     const product = await this.productsRepository.findOneBy({ id: productId });
-    return product!.toEntity();
+    return product?.toEntity() ?? null;
+  }
+
+  async findByIdWithAlerts(productId: number): Promise<Product | null> {
+    const product = await this.productsRepository.findOne({ where: { id: productId }, relations: { alerts: true } });
+    return product?.toEntity() ?? null;
   }
 
   async addProductPriceFromSnapshot(params: UpdateWithSnapshotParams): Promise<Product> {
@@ -65,6 +71,9 @@ export class ProductsRepositoryTypeORM implements ProductsRepository {
     params: FindByIdWithPricesFilteredParams
   ): Promise<FindByIdWithPricesFilteredResult> {
     const { dateRange, productId } = params;
+    const product = await this.findById(productId);
+    if (!product) return { product: null, productPricesTotal: 0 };
+
     const [prices, total] = await this.productPricesRepository.findAndCount({
       where: {
         productId: productId,
@@ -72,9 +81,7 @@ export class ProductsRepositoryTypeORM implements ProductsRepository {
       },
     });
     const pricesEntities = prices.map((price) => price.toEntity());
-    const product = await this.findById(productId)!;
     const productEntity = Product.fromPlainObject({ ...product!, prices: pricesEntities });
-
     return { product: productEntity, productPricesTotal: total };
   }
 }
