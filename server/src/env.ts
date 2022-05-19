@@ -3,10 +3,10 @@ import assert from 'assert';
 
 dotenv.config();
 
-assert.deepStrictEqual(typeof process.env.EMAIL, 'string');
-assert.deepStrictEqual(typeof process.env.EMAIL_PASSWORD, 'string');
+assert.strictEqual(typeof process.env.SES_SECRET_ACCESS_KEY, 'string');
+assert.strictEqual(typeof process.env.SES_ACCESS_KEY_ID, 'string');
 
 export const ENV = {
-  EMAIL: process.env.EMAIL!,
-  PASSWORD: process.env.EMAIL_PASSWORD!,
+  SES_SECRET_ACCESS_KEY: process.env.SES_SECRET_ACCESS_KEY!,
+  SES_ACCESS_KEY_ID: process.env.SES_ACCESS_KEY_ID!,
 };
