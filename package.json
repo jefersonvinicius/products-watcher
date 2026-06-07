@@ -1,0 +1,27 @@
+{
+  "name": "products-watcher",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "tsx --env-file=.env index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jefersonvinicius/products-watcher.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jefersonvinicius/products-watcher/issues"
+  },
+  "homepage": "https://github.com/jefersonvinicius/products-watcher#readme",
+  "description": "",
+  "dependencies": {
+    "@google/genai": "^2.7.0",
+    "typescript": "^6.0.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.22.3"
+  }
+}
