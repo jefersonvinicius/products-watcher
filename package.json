@@ -2,6 +2,8 @@
   "name": "products-watcher",
   "version": "1.0.0",
   "main": "index.js",
+  "private": true,
+  "workspaces": ["webapp"],
   "scripts": {
     "example": "tsx --env-file=.env index.ts",
     "test": "vitest",
