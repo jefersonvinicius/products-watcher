@@ -1,7 +1,12 @@
 import { knex } from '../database/knex';
+import logger, { benchmark } from '../logging';
 import { SearchResult } from '../search/search';
+import { parsePrice } from './parser';
 
 export async function importSearchResult(searchResult: SearchResult) {
+  logger.info(`Importing results for "${searchResult.term}"`);
+
+  const start = benchmark.start();
   await knex('terms')
     .insert({
       text: searchResult.term,
@@ -18,11 +23,15 @@ export async function importSearchResult(searchResult: SearchResult) {
     return {
       url: result.url || 'N/A',
       name: result.product?.name || 'N/A',
-      price: result.product?.price ? parseInt(result.product?.price, 10) : 0,
+      price: parsePrice(result.product?.price) || 0,
       term_id: term.id,
       created_at: datetime,
     };
   });
+  logger.info({ products }, `Inserting ${products.length} products`);
 
   await knex('products').insert(products);
+
+  const duration = benchmark.end(start);
+  logger.info({ duration }, `Import finished! ${products.length} products inserted in ${benchmark.format(duration)}`);
 }
